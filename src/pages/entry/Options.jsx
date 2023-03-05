@@ -14,12 +14,18 @@ export default function Options({ optionType }) {
   const { totals } = useOrderDetails();
 
   useEffect(() => {
+    const controller = new AbortController();
     axios
-      .get(`http://localhost:3030/${optionType}`)
+      .get(`http://localhost:3030/${optionType}`, { signal: controller.signal })
       .then((response) => setItems(response.data))
-      .catch((_error) => {
-        setError(true);
+      .catch((error) => {
+        if (error.name !== "CanceledError") {
+          setError(true);
+        }
       });
+    return () => {
+      controller.abort();
+    };
   }, [optionType]);
 
   if (error) {
